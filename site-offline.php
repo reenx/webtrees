@@ -1,22 +1,19 @@
 <?php
-// Site Unavailable
-//
-// webtrees: Web based Family History software
-// Copyright (C) 2013 webtrees development team.
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+/**
+ * webtrees: online genealogy
+ * Copyright (C) 2016 webtrees development team
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+namespace Fisharebest\Webtrees;
 
 define('WT_SCRIPT_NAME', 'site-offline.php');
 
@@ -24,35 +21,32 @@ define('WT_SCRIPT_NAME', 'site-offline.php');
 // session.php won’t run until a configuration file and database connection exist...
 // This next block of code is a minimal version of session.php
 define('WT_WEBTREES', 'webtrees');
+define('WT_BASE_URL', '');
 define('WT_ROOT', '');
-define('WT_GED_ID', 0);
-define('WT_USER_ID', 0);
-define('WT_DATA_DIR', realpath('data').DIRECTORY_SEPARATOR);
-define('WT_DEBUG_LANG', false); // The translation library needs this
-$WT_SESSION=new stdClass();
-$WT_SESSION->locale='';
-// Invoke the Zend Framework Autoloader, so we can use Zend_XXXXX and WT_XXXXX classes
-set_include_path(WT_ROOT.'library'.PATH_SEPARATOR.get_include_path());
-require_once 'Zend/Loader/Autoloader.php';
-Zend_Loader_Autoloader::getInstance()->registerNamespace('WT_');
-require 'includes/functions/functions.php';
-require WT_ROOT.'includes/functions/functions_utf-8.php';
-define('WT_LOCALE', WT_I18N::init());
+define('WT_DATA_DIR', realpath('data') . DIRECTORY_SEPARATOR);
+define('WT_MODULES_DIR', 'modules_v3/');
 
-if (file_exists(WT_DATA_DIR.'offline.txt')) {
-	$offline_txt=file_get_contents(WT_DATA_DIR.'offline.txt');
+require 'vendor/autoload.php';
+
+Session::start();
+
+define('WT_LOCALE', I18N::init());
+
+if (file_exists(WT_DATA_DIR . 'offline.txt')) {
+	$offline_txt = file_get_contents(WT_DATA_DIR . 'offline.txt');
 } else {
 	// offline.txt has gone - we're back online!
 	header('Location: index.php');
-	exit;
+
+	return;
 }
 
+http_response_code(503);
 header('Content-Type: text/html; charset=UTF-8');
-header($_SERVER['SERVER_PROTOCOL'].' 503 Service Temporarily Unavailable');
 
 echo
 	'<!DOCTYPE html>',
-	'<html ', WT_I18N::html_markup(), '>',
+	'<html ', I18N::htmlAttributes(), '>',
 	'<head>',
 	'<meta charset="UTF-8">',
 	'<title>', WT_WEBTREES, '</title>',
@@ -68,13 +62,13 @@ echo
 		.good {color: green;}
 	</style>',
 	'</head><body>',
-	'<h1>', WT_I18N::translate('This website is temporarily unavailable'), '</h1>',
+	'<h1>', I18N::translate('This website is temporarily unavailable'), '</h1>',
 	'<div class="content"><p>';
 
 if ($offline_txt) {
 	echo $offline_txt;
 } else {
-	echo WT_I18N::translate('The site is down for maintenance.  You should <a href="index.php">try again</a> in a few minutes.');
+	echo I18N::translate('This website is down for maintenance. You should <a href="index.php">try again</a> in a few minutes.');
 }
 echo '</p>';
 echo '</div>';
